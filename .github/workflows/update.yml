@@ -1,0 +1,42 @@
+name: Update Formulae
+
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-formulae
+  cancel-in-progress: false
+
+jobs:
+  update:
+    name: Update Formulae
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set Up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '4.0'
+      - name: Update Formulae
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: bin/update-formula
+      - name: Audit, Install, and Test Formulae
+        if: ${{ hashFiles('Formula/*.rb') != '' }}
+        run: bin/test-formulae
+      - name: Commit and Push Formulae
+        run: |
+          git add Formula
+          if git diff --cached --quiet; then
+            echo "Formulae are up to date."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Update formulae from the latest releases."
+          git push origin HEAD:master

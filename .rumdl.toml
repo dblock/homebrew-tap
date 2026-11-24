@@ -1,0 +1,7 @@
+[global]
+# Paragraphs stay on one source line.
+disable = ["MD013"]
+
+[MD063]
+enabled = true
+style = "title-case"

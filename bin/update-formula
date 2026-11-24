@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Usage: bin/update-formula [FORMULA ...]
+# Writes Formula/FORMULA.rb from the latest release of its tool; updates every formula when none is given.
+require_relative '../lib/formula_updater'
+
+exit FormulaUpdater.run(ARGV)

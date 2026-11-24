@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Audits, installs, and tests every formula in Formula/ from this checkout as the dblock/tap tap.
+set -euo pipefail
+
+shopt -s nullglob
+formulae=(Formula/*.rb)
+if [ ${#formulae[@]} -eq 0 ]; then
+  echo "There are no formulae yet."
+  exit 0
+fi
+
+export HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALL_CLEANUP=1
+brew tap dblock/tap "$PWD"
+trap 'brew untap --force dblock/tap > /dev/null 2>&1 || true' EXIT
+for formula in "${formulae[@]}"; do
+  name="dblock/tap/$(basename "$formula" .rb)"
+  brew trust --formula "$name"
+  brew audit --strict --formula "$name"
+  brew install --formula "$name"
+  brew test "$name"
+done
