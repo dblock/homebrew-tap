@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Audits, installs, and tests every formula in Formula/ from this checkout as the dblock/tap tap.
+# Audits, installs, and tests every committed formula in Formula/ from this checkout as the dblock/tap tap.
+# Homebrew taps a local checkout by cloning it, so uncommitted changes are not tested.
 set -euo pipefail
 
 shopt -s nullglob

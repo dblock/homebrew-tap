@@ -26,17 +26,23 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: bin/update-formula
-      - name: Audit, Install, and Test Formulae
-        if: ${{ hashFiles('Formula/*.rb') != '' }}
-        run: bin/test-formulae
-      - name: Commit and Push Formulae
+      # Homebrew taps a checkout by cloning it, so formulae are tested from a local commit, then pushed.
+      - name: Commit Formulae
+        id: commit
         run: |
           git add Formula
           if git diff --cached --quiet; then
             echo "Formulae are up to date."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "Update formulae from the latest releases."
-          git push origin HEAD:master
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+      - name: Audit, Install, and Test Formulae
+        if: steps.commit.outputs.changed == 'true'
+        run: bin/test-formulae
+      - name: Push Formulae
+        if: steps.commit.outputs.changed == 'true'
+        run: git push origin HEAD:master
