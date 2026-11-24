@@ -24,8 +24,13 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '4.0'
+          bundler-cache: true
       - name: Run Tests
-        run: ruby -Ilib test/formula_updater_test.rb
+        run: bundle exec ruby -Ilib test/formula_updater_test.rb
+      - name: Report Coverage
+        uses: coverallsapp/github-action@v2
+        with:
+          file: coverage/lcov.info
       - name: Check the Latest Releases
         env:
           GITHUB_TOKEN: ${{ github.token }}

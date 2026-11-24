@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'minitest/autorun'
+require_relative 'test_helper'
 require 'stringio'
 require 'tmpdir'
 require_relative '../lib/formula_updater'
@@ -90,6 +90,70 @@ class FormulaUpdaterTest < Minitest::Test
     assert_equal "error: GitHub returned 500 for the latest release of dblock/fue-rs.\n", @err.string
     assert_equal 1, run_updater(lambda { |url| url.include?('api.github.com') ? [200, JSON.generate(release)] : [403, ''] })
     assert_includes @err.string, 'error: GitHub returned 403 for fue-1.2.3-aarch64-apple-darwin.tar.gz.sha256.'
+  end
+
+  def response(klass, code, body: '', location: nil)
+    response = klass.new('1.1', code, '')
+    response['location'] = location if location
+    response.instance_variable_set(:@body, body)
+    response.instance_variable_set(:@read, true)
+    response
+  end
+
+  # Stubs HTTP, recording each request and its host, and answering with `responses` in order.
+  def with_http(responses, token: 'secret-token')
+    requests = []
+    start = lambda do |host, _port, **_options, &block|
+      http = Object.new
+      http.define_singleton_method(:request) do |request|
+        requests << [host, request]
+        responses.shift
+      end
+      block.call(http)
+    end
+    previous = ENV.fetch('GITHUB_TOKEN', nil)
+    ENV['GITHUB_TOKEN'] = token
+    Net::HTTP.stub(:start, start) { yield requests }
+  ensure
+    ENV['GITHUB_TOKEN'] = previous
+  end
+
+  def test_fetches_with_the_token_only_for_the_github_api
+    with_http([response(Net::HTTPOK, '200', body: '{}')]) do |requests|
+      assert_equal [200, '{}'], FormulaUpdater.fetch('https://api.github.com/repos/dblock/fue-rs/releases/latest')
+      host, request = requests.first
+      assert_equal 'api.github.com', host
+      assert_equal 'Bearer secret-token', request['Authorization']
+      assert_equal 'application/vnd.github+json', request['Accept']
+    end
+  end
+
+  def test_follows_download_redirects_without_the_token
+    responses = [
+      response(Net::HTTPFound, '302', location: 'https://objects.example.com/fue.sha256'),
+      response(Net::HTTPOK, '200', body: "#{digest(0)}  fue.tar.gz\n")
+    ]
+    with_http(responses) do |requests|
+      status, body = FormulaUpdater.fetch('https://github.com/dblock/fue-rs/releases/download/v1.2.3/fue.sha256')
+      assert_equal 200, status
+      assert body.start_with?(digest(0))
+      assert_equal %w[github.com objects.example.com], requests.map(&:first)
+      assert(requests.none? { |_host, request| request['Authorization'] })
+    end
+  end
+
+  def test_stops_following_redirects
+    redirect = response(Net::HTTPFound, '302', location: 'https://github.com/loop')
+    with_http([redirect, redirect]) do
+      assert_equal [302, ''], FormulaUpdater.fetch('https://github.com/loop', redirects: 1)
+    end
+  end
+
+  def test_omits_an_empty_token
+    with_http([response(Net::HTTPOK, '200', body: '{}')], token: '') do |requests|
+      FormulaUpdater.fetch('https://api.github.com/repos/dblock/fue-rs/releases/latest')
+      assert_nil requests.first.last['Authorization']
+    end
   end
 
   def test_rejects_unknown_formulae
