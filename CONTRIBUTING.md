@@ -2,10 +2,11 @@
 
 ## Setup and Validation
 
-Install Ruby 4.0 and [Homebrew](https://brew.sh/). Run the updater tests and the formula checks, and lint Markdown with [rumdl](https://github.com/rvben/rumdl):
+Install Ruby 4.0 and [Homebrew](https://brew.sh/). Install the test gems, run the updater tests and the formula checks, and lint Markdown with [rumdl](https://github.com/rvben/rumdl):
 
 ```sh
-ruby -Ilib test/formula_updater_test.rb
+bundle install
+bundle exec ruby -Ilib test/formula_updater_test.rb
 bin/update-formula
 bin/test-formulae
 rumdl check .
@@ -15,7 +16,7 @@ rumdl check .
 
 ## Tests
 
-`test/formula_updater_test.rb` checks the generated formulae and the updater's errors with a fake fetcher, without network access. Add a test for each change to the updater.
+`test/formula_updater_test.rb` checks the generated formulae and the updater's errors with a fake fetcher, and the HTTP fetcher with a stubbed `Net::HTTP`, without network access. Tests measure line and branch coverage with SimpleCov, written to `coverage/` and reported to [Coveralls](https://coveralls.io/github/dblock/homebrew-tap) by CI; keep it complete and add a test for each change to the updater.
 
 ## Pull Requests
 

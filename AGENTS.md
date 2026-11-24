@@ -15,7 +15,7 @@ This repository is the `dblock/tap` Homebrew tap. Its formulae install prebuilt 
 ## Validation
 
 ```sh
-ruby -Ilib test/formula_updater_test.rb
+bundle exec ruby -Ilib test/formula_updater_test.rb
 bin/test-formulae
 rumdl check .
 ```
