@@ -17,7 +17,10 @@ jobs:
     name: Update Formulae
     runs-on: macos-latest
     steps:
+      # Runs wait for each other, so check out master as it is now, not the commit the run was triggered at.
       - uses: actions/checkout@v7
+        with:
+          ref: master
       - name: Set Up Ruby
         uses: ruby/setup-ruby@v1
         with:
