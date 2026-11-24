@@ -1,0 +1,42 @@
+name: Test
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  updater:
+    name: Updater
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Set Up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '4.0'
+      - name: Run Tests
+        run: ruby -Ilib test/formula_updater_test.rb
+      - name: Check the Latest Releases
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: bin/update-formula
+
+  formulae:
+    name: Formulae
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Audit, Install, and Test Formulae
+        run: bin/test-formulae
