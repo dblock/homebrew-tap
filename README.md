@@ -12,11 +12,13 @@ Install [Homebrew](https://brew.sh/) on macOS or Linux. Installing a formula by 
 
 ```sh
 brew install dblock/tap/fue
+brew install dblock/tap/excalc
 ```
 
 | Formula | Tool |
 | --- | --- |
 | `fue` | [fue](https://github.com/dblock/fue-rs), find e-mail addresses of GitHub users and repository contributors. |
+| `excalc` | [excalc](https://github.com/dblock/excalc-rs), an expression calculator CLI (`excalc`, `calc`) and MCP server (`excalc-mcp`) for AI coding agents. Conflicts with Homebrew's `calc`. |
 
 A formula appears once its tool has its first release. The [Update Formulae](.github/workflows/update.yml) workflow checks for new releases every six hours, audits, installs, and tests the updated formulae on macOS, and commits them. Run it immediately after a release with `gh workflow run update.yml --repo dblock/homebrew-tap`.
 

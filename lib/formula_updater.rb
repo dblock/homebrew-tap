@@ -6,19 +6,36 @@ require 'uri'
 
 # Writes formulae in Formula/ from the latest GitHub release of each tool, using the archives and checksums attached to it.
 module FormulaUpdater
+  TARGETS = {
+    macos_arm: 'aarch64-apple-darwin',
+    macos_intel: 'x86_64-apple-darwin',
+    linux_arm: 'aarch64-unknown-linux-musl',
+    linux_intel: 'x86_64-unknown-linux-musl'
+  }.freeze
+
+  # Each tool's archives are named after its first binary, which also prints `NAME VERSION` for `--version`.
   FORMULAE = {
     'fue' => {
       repository: 'dblock/fue-rs',
       class_name: 'Fue',
       desc: 'Find e-mail addresses of GitHub users and repository contributors',
       license: 'MIT',
-      binary: 'fue',
-      targets: {
-        macos_arm: 'aarch64-apple-darwin',
-        macos_intel: 'x86_64-apple-darwin',
-        linux_arm: 'aarch64-unknown-linux-musl',
-        linux_intel: 'x86_64-unknown-linux-musl'
-      }
+      binaries: %w[fue],
+      targets: TARGETS
+    },
+    'excalc' => {
+      repository: 'dblock/excalc-rs',
+      class_name: 'Excalc',
+      desc: 'Expression calculator CLI tool and MCP server for AI coding agents',
+      license: 'MIT',
+      binaries: %w[excalc calc excalc-mcp],
+      conflicts: { 'calc' => 'both install a `calc` binary' },
+      tests: [
+        'assert_equal "4", shell_output("#{bin}/excalc \'2 + 2\'").strip',
+        'assert_equal "4", shell_output("#{bin}/calc \'2 + 2\'").strip',
+        'assert_path_exists bin/"excalc-mcp"'
+      ],
+      targets: TARGETS
     }
   }.freeze
 
@@ -46,7 +63,7 @@ module FormulaUpdater
 
     version = release.fetch('tag_name').delete_prefix('v')
     checksums = config[:targets].transform_values do |target|
-      checksum(release, "#{config[:binary]}-#{version}-#{target}.tar.gz", fetch)
+      checksum(release, "#{config[:binaries].first}-#{version}-#{target}.tar.gz", fetch)
     end
     content = render(config, version, checksums)
     path = File.join(root, 'Formula', "#{name}.rb")
@@ -80,10 +97,16 @@ module FormulaUpdater
   end
 
   def render(config, version, checksums)
+    binary = config[:binaries].first
     url = lambda do |target|
       "https://github.com/#{config[:repository]}/releases/download/v#{version}/" \
-        "#{config[:binary]}-#{version}-#{config[:targets].fetch(target)}.tar.gz"
+        "#{binary}-#{version}-#{config[:targets].fetch(target)}.tar.gz"
     end
+    conflicts = config.fetch(:conflicts, {}).map do |formula, reason|
+      "\n  conflicts_with \"#{formula}\", because: \"#{reason}\""
+    end
+    conflicts = conflicts.empty? ? '' : "\n#{conflicts.join}"
+    tests = config.fetch(:tests, []).map { |line| "\n    #{line}" }.join
     <<~RUBY
       # Generated from the latest #{config[:repository]} release by bin/update-formula; do not edit.
       class #{config[:class_name]} < Formula
@@ -111,14 +134,14 @@ module FormulaUpdater
             url "#{url.call(:linux_intel)}"
             sha256 "#{checksums.fetch(:linux_intel)}"
           end
-        end
+        end#{conflicts}
 
         def install
-          bin.install "#{config[:binary]}"
+          bin.install #{config[:binaries].map { |name| "\"#{name}\"" }.join(', ')}
         end
 
         test do
-          assert_equal "#{config[:binary]} \#{version}", shell_output("\#{bin}/#{config[:binary]} --version").strip
+          assert_equal "#{binary} \#{version}", shell_output("\#{bin}/#{binary} --version").strip#{tests}
         end
       end
     RUBY
