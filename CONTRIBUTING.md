@@ -12,7 +12,7 @@ bin/test-formulae
 rumdl check .
 ```
 
-`bin/update-formula` writes `Formula/NAME.rb` from the latest release of each tool listed in `lib/formula_updater.rb`, using the `.sha256` file attached to each archive. `bin/test-formulae` taps this checkout as `dblock/tap`, then runs `brew audit --strict`, `brew install`, and `brew test` for every formula. Its install and uninstall may let Homebrew remove dependencies nothing else uses.
+`bin/update-formula` writes `Formula/NAME.rb` from the latest release of each tool listed in `lib/formula_updater.rb`, using the `.sha256` file attached to each archive. `bin/test-formulae` taps this checkout as `dblock/tap`, which clones it, so it tests committed formulae only, then runs `brew audit --strict`, `brew install`, and `brew test` for every formula. Its install and uninstall may let Homebrew remove dependencies nothing else uses.
 
 ## Tests
 
