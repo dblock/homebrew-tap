@@ -6,23 +6,23 @@ class Excalc < Formula
 
   on_macos do
     on_arm do
-      url "https://github.com/dblock/excalc-rs/releases/download/v0.3.3/excalc-0.3.3-aarch64-apple-darwin.tar.gz"
-      sha256 "7e41eacfcbfcd26d3e0d3e1a48abd351f1e517689040ea2fecbffd0abd178d3a"
+      url "https://github.com/dblock/excalc-rs/releases/download/v0.3.4/excalc-0.3.4-aarch64-apple-darwin.tar.gz"
+      sha256 "f2c5629afd4f7840d33c0cb4812c1f4fd49584cad6976e0412753e2a966ee8fa"
     end
     on_intel do
-      url "https://github.com/dblock/excalc-rs/releases/download/v0.3.3/excalc-0.3.3-x86_64-apple-darwin.tar.gz"
-      sha256 "144d8125736891290eaa84d44d788744f6407d63867c86dc06d8fcfb990f5912"
+      url "https://github.com/dblock/excalc-rs/releases/download/v0.3.4/excalc-0.3.4-x86_64-apple-darwin.tar.gz"
+      sha256 "f7d9d4a6b8ae7d86f1186fad86f914db5c587eba989e1f6f8bf20295ca843775"
     end
   end
 
   on_linux do
     on_arm do
-      url "https://github.com/dblock/excalc-rs/releases/download/v0.3.3/excalc-0.3.3-aarch64-unknown-linux-musl.tar.gz"
-      sha256 "7a1ac3ce65a64e5483f2ef98a3b0fb3ebf19242ebcadcd5e4826fa84a6c392fb"
+      url "https://github.com/dblock/excalc-rs/releases/download/v0.3.4/excalc-0.3.4-aarch64-unknown-linux-musl.tar.gz"
+      sha256 "9f12c15d791e04817f365183b3c7b6a2e136688d4afa191e0cb2bcee391c7e33"
     end
     on_intel do
-      url "https://github.com/dblock/excalc-rs/releases/download/v0.3.3/excalc-0.3.3-x86_64-unknown-linux-musl.tar.gz"
-      sha256 "5ecf9c6fb61de580c522671ee7e90584fc7438645ca39ecde50d198b834363ad"
+      url "https://github.com/dblock/excalc-rs/releases/download/v0.3.4/excalc-0.3.4-x86_64-unknown-linux-musl.tar.gz"
+      sha256 "2dcf9669a9656f9df72ae4c6035ea2f24ef6aeb48e656ca4c6b7d8a2bdbfd032"
     end
   end
 

@@ -6,23 +6,23 @@ class Fue < Formula
 
   on_macos do
     on_arm do
-      url "https://github.com/dblock/fue-rs/releases/download/v0.1.1/fue-0.1.1-aarch64-apple-darwin.tar.gz"
-      sha256 "74de160c536de6fa8c3f8b3017419471f502aa240217e2db8ec8560819874e9f"
+      url "https://github.com/dblock/fue-rs/releases/download/v0.1.2/fue-0.1.2-aarch64-apple-darwin.tar.gz"
+      sha256 "efdc128fd6253388b2365e3dc4cbff01b93d0a210a7a6fd6a64b11946a9297f0"
     end
     on_intel do
-      url "https://github.com/dblock/fue-rs/releases/download/v0.1.1/fue-0.1.1-x86_64-apple-darwin.tar.gz"
-      sha256 "a9b9fe6531881b45d828928bc61bccae03b1f6e546ab7ea9480ea0b9dd543bf0"
+      url "https://github.com/dblock/fue-rs/releases/download/v0.1.2/fue-0.1.2-x86_64-apple-darwin.tar.gz"
+      sha256 "3d6b73625681741dec27088c1c6ddd103f5558ffb0f931de28a1f299378ae660"
     end
   end
 
   on_linux do
     on_arm do
-      url "https://github.com/dblock/fue-rs/releases/download/v0.1.1/fue-0.1.1-aarch64-unknown-linux-musl.tar.gz"
-      sha256 "a52a0295bfa04618ac53db6b6fd35296a2bb599a586e2f93467255c4d99c744d"
+      url "https://github.com/dblock/fue-rs/releases/download/v0.1.2/fue-0.1.2-aarch64-unknown-linux-musl.tar.gz"
+      sha256 "957706ac8a1120785a24896b24953de7c2a39e17c4b86797eea0d57b64af8378"
     end
     on_intel do
-      url "https://github.com/dblock/fue-rs/releases/download/v0.1.1/fue-0.1.1-x86_64-unknown-linux-musl.tar.gz"
-      sha256 "2b857e126c02eb1bf6ba9a0feeeb2fd4676cb31b79fc3520ac14b7ec19db688f"
+      url "https://github.com/dblock/fue-rs/releases/download/v0.1.2/fue-0.1.2-x86_64-unknown-linux-musl.tar.gz"
+      sha256 "0c337468be5744fc11119de5389499b004c2b362e42a4367f22551783baa3fda"
     end
   end
 
