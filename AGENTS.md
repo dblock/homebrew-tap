@@ -2,7 +2,7 @@
 
 Read [CONTRIBUTING](CONTRIBUTING.md) first.
 
-This repository is the `dblock/tap` Homebrew tap. Its formulae install prebuilt release archives of tools by @dblock, such as [fue](https://github.com/dblock/fue-rs).
+This repository is the `dblock/tap` Homebrew tap. Its formulae install prebuilt release archives of tools by @dblock, such as [fue](https://github.com/dblock/fue-rs) and [excalc](https://github.com/dblock/excalc-rs).
 
 ## Invariants
 

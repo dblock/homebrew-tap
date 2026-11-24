@@ -23,22 +23,24 @@ class FormulaUpdaterTest < Minitest::Test
     index.to_s * 64
   end
 
-  def release(version = '1.2.3', targets: TARGETS)
+  def release(version = '1.2.3', targets: TARGETS, archive: 'fue')
     {
       'tag_name' => "v#{version}",
       'assets' => targets.map do |target|
-        { 'name' => "fue-#{version}-#{target}.tar.gz.sha256", 'browser_download_url' => "https://example.com/#{target}.sha256" }
+        { 'name' => "#{archive}-#{version}-#{target}.tar.gz.sha256", 'browser_download_url' => "https://example.com/#{target}.sha256" }
       end
     }
   end
 
-  def fetcher(release, checksums: {})
+  def fetcher(release, checksums: {}, repository: 'dblock/fue-rs')
     lambda do |url|
-      if url == 'https://api.github.com/repos/dblock/fue-rs/releases/latest'
+      if url == "https://api.github.com/repos/#{repository}/releases/latest"
         release ? [200, JSON.generate(release)] : [404, '{}']
+      elsif url.start_with?('https://api.github.com/')
+        [404, '{}']
       else
         index = TARGETS.index(url[%r{example\.com/(.+)\.sha256}, 1])
-        [200, checksums.fetch(index, "#{digest(index)}  fue-1.2.3-#{TARGETS[index]}.tar.gz\n")]
+        [200, checksums.fetch(index, "#{digest(index)}  archive-1.2.3-#{TARGETS[index]}.tar.gz\n")]
       end
     end
   end
@@ -47,8 +49,8 @@ class FormulaUpdaterTest < Minitest::Test
     FormulaUpdater.run(names, fetch: fetch, root: @root, out: @out, err: @err)
   end
 
-  def formula
-    File.read(File.join(@root, 'Formula', 'fue.rb'))
+  def formula(name = 'fue')
+    File.read(File.join(@root, 'Formula', "#{name}.rb"))
   end
 
   def test_writes_a_formula_from_the_latest_release
@@ -61,12 +63,33 @@ class FormulaUpdaterTest < Minitest::Test
     assert_includes formula, 'assert_equal "fue #{version}", shell_output("#{bin}/fue --version").strip'
   end
 
+  def test_writes_a_formula_without_conflicts_or_extra_tests
+    run_updater(fetcher(release))
+    refute_includes formula, 'conflicts_with'
+    assert_includes formula, "  bin.install \"fue\"\n  end"
+    assert_includes formula, "--version\").strip\n  end"
+  end
+
+  def test_writes_a_formula_with_several_binaries_conflicts_and_extra_tests
+    fetch = fetcher(release(archive: 'excalc'), repository: 'dblock/excalc-rs')
+    assert_equal 0, run_updater(fetch, ['excalc'])
+    assert_equal "Updated excalc to 1.2.3.\n", @out.string
+    excalc = formula('excalc')
+    assert_includes excalc, 'class Excalc < Formula'
+    assert_includes excalc, 'url "https://github.com/dblock/excalc-rs/releases/download/v1.2.3/excalc-1.2.3-x86_64-apple-darwin.tar.gz"'
+    assert_includes excalc, "  end\n\n  conflicts_with \"calc\", because: \"both install a `calc` binary\"\n\n  def install"
+    assert_includes excalc, 'bin.install "excalc", "calc", "excalc-mcp"'
+    assert_includes excalc, 'assert_equal "excalc #{version}", shell_output("#{bin}/excalc --version").strip'
+    assert_includes excalc, %(assert_equal "4", shell_output("\#{bin}/calc '2 + 2'").strip)
+    assert_includes excalc, "assert_path_exists bin/\"excalc-mcp\"\n  end"
+  end
+
   def test_leaves_an_up_to_date_formula_alone
     run_updater(fetcher(release))
     @out.truncate(0)
     @out.rewind
     assert_equal 0, run_updater(fetcher(release), [])
-    assert_equal "fue 1.2.3 is up to date.\n", @out.string
+    assert_equal "fue 1.2.3 is up to date.\ndblock/excalc-rs has no releases yet.\n", @out.string
   end
 
   def test_waits_for_a_first_release
